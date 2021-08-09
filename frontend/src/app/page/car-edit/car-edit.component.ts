@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
 import { Car } from 'src/app/model/car';
 import { CarService } from 'src/app/service/car.service';
 
@@ -13,9 +11,23 @@ import { CarService } from 'src/app/service/car.service';
 })
 export class CarEditComponent implements OnInit {
 
-  constructor() { }
+  car: Car = new Car();
+  carId: string = '';
 
-  ngOnInit(): void {
+  constructor(
+    private activatedRoute: ActivatedRoute,
+    private carService: CarService,
+    private router: Router,
+  ) { }
+
+  async ngOnInit(): Promise<void> {
+    this.carId = this.activatedRoute.snapshot.params.id;
+    this.car = await this.carService.get(this.carId).toPromise();
   }
+
+  async save(form: NgForm): Promise<void> {
+    await this.carService.update({ ...form.value, _id: this.carId }).toPromise();
+    this.router.navigate(['/', 'cars']);
+  };
 
 }
